@@ -1,0 +1,28 @@
+{
+  "name": "employee_tracker",
+  "version": "1.0.0",
+  "description": "",
+  "main": "employeeTracker.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node employeeTracker.js",
+    "watch": "nodemon employeeTracker.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/emangano2816/employee_tracker.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/emangano2816/employee_tracker/issues"
+  },
+  "homepage": "https://github.com/emangano2816/employee_tracker#readme",
+  "dependencies": {
+    "inquirer": "^8.1.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.12"
+  }
+}
