@@ -88,6 +88,8 @@ const start = () => {
                 addRole(answers);
             } else if (answers.addwhat === 'Employee') {
                 addEmployee(answers);
+            } else if (answers.action === 'UPDATE') {
+                updateEmployee();
             }
             
             else {
@@ -191,7 +193,7 @@ const addEmployee = (fname_lname) => {
                 message: 'Which department is the employee being added to?',
             },
         ]);
-        
+        //find index of selected department in order to find id of department for WHERE clause
         deptIndex = results_dept.findIndex(result => result.name === dept.dept);
         
         connection.query(`SELECT * FROM emprole WHERE department_id = ${results_dept[deptIndex].id}`, async (err, results_role) => {
@@ -203,6 +205,7 @@ const addEmployee = (fname_lname) => {
                     message: 'What is the new employees role?',
                 },
             ]);
+            //find index of selected role in order to supply role id for insert
             roleIndex = results_role.findIndex(result => result.title === roleID.roleID);
 
             connection.query('INSERT INTO employee SET ?',
@@ -218,6 +221,49 @@ const addEmployee = (fname_lname) => {
             )
         })
 
+    })
+}
+
+//Function to update employee role
+const updateEmployee = () => {
+    connection.query("SELECT e.id, concat(e.first_name, ' ', e.last_name) AS empName, e.role_id, e.manager_id, r.title, r.department_id FROM employee e JOIN emprole r ON e.role_id = r.id;", async (err, results_emp) => {
+        // console.log(results_emp);
+        if (err) throw err;
+        //prompt user for the name of the employee they wish to update
+        const empUpdate = await inquirer.prompt([
+            {
+                type:'rawlist',
+                name: 'emp',
+                choices: getEmpArray(results_emp),
+                message: 'Which employee would you like to update?',
+            },
+        ]);
+        //find employee index in order to use role_id in WHERE clause for emprole table
+        empIndex = results_emp.findIndex(result => result.empName === empUpdate.emp);
+
+        connection.query(`SELECT * FROM emprole WHERE id <> ${results_emp[empIndex].role_id} AND department_id = ${results_emp[empIndex].department_id}`, async (err, results_role) => {
+            console.log(results_role);
+            const roleID = await inquirer.prompt([
+                {
+                    type: 'rawlist',
+                    name: 'roleID',
+                    choices: getRoleArray(results_role),
+                    message: 'What is the new employees role?',
+                },
+            ]);
+            //find index of selected role in order to supply role id for insert
+            roleIndex = results_role.findIndex(result => result.title === roleID.roleID);
+
+            connection.query(`UPDATE employee SET ? WHERE id = ${results_emp[empIndex].id}`,
+                {
+                    role_id: results_role[roleIndex].id,
+                }, (error) => {
+                    if (error) throw err;
+                    console.log('Employee role updated successfully.')
+                    start();
+                }
+            )
+        })
     })
 }
 
@@ -237,6 +283,15 @@ function getRoleArray(results){
         roleArray.push(title);
     });
     return roleArray;
+}
+
+//function to return an array of employees from employee table
+function getEmpArray(results){
+    const empArray= [];
+    results.forEach(({ empName }) => {
+        empArray.push(empName);
+    });
+    return empArray;
 }
 
 //connect to the mysql server and sql db
