@@ -2,7 +2,8 @@
 const mysql = require('mysql');
 const inquirer = require('inquirer');
 const cTable = require('console.table');
-const Department = require('./lib/Department')
+const { allowedNodeEnvironmentFlags } = require('process');
+
 
 //create connection info for sql db
 const connection = mysql.createConnection({
@@ -44,6 +45,18 @@ const start = () => {
                         name: 'deptName',
                         message: 'What is the new Department?',
                         when: (answers) => answers.addwhat === 'Department',
+                    },
+                    {
+                        type: 'input',
+                        name: 'roleTitle',
+                        message: 'What is the position title?',
+                        when: (answers) => answers.addwhat === 'Role',
+                    }, 
+                    {
+                        type: 'input',
+                        name: 'salary',
+                        message: 'What is the salary for this position?',
+                        when:  (answers) => answers.addwhat === 'Role',
                     }
 
         ])
@@ -59,7 +72,10 @@ const start = () => {
                 viewEmployees();
             } else if (answers.addwhat === 'Department') {
                 addDepartment(answers.deptName);
-            } 
+            } else if (answers.addwhat === 'Role') {
+                console.log(answers);
+                addRole(answers);
+            }
             
             else {
                 connection.end();
@@ -118,6 +134,45 @@ const addDepartment =(deptName) => {
             start();
         })
 }
+
+//Function to add a role
+const addRole = (titlesalary) => {
+    connection.query('SELECT * FROM department', async (err, results) => {
+        if (err) throw err;
+        //prompt user for which department to add
+        const answer = await inquirer.prompt([
+                        {
+                            type: 'rawlist',
+                            name: 'deptID',
+                            choices: returnDeptArray(results),
+                            message: 'Which department does this role belong to?',
+                        },
+            ]); 
+
+        deptIndex = results.findIndex(result => result.name === answer.deptID);
+        connection.query('INSERT INTO emprole SET ?',
+            {
+                title: titlesalary.roleTitle,
+                salary: titlesalary.salary,
+                department_id: results[deptIndex].id,
+            }, (error) => {
+                if (error) throw err;
+                console.log('Role added successfully.')
+                start();
+            })
+})
+    
+        console.log('Test log');
+}
+
+//funciton to return an array of choices from the deparment table
+function returnDeptArray(results) {
+    const choiceArray = [];
+    results.forEach(({ name }) => {
+        choiceArray.push(name);
+    });
+    return choiceArray;
+};
 
 //connect to the mysql server and sql db
 connection.connect((err) => {
