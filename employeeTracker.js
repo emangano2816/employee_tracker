@@ -100,7 +100,7 @@ const start = () => {
 
 //Display employee summary from DB
 const viewRoster = () => {
-    connection.query('SELECT dept.name AS "Department Name", erole.title as "Employee Title", emp.first_name AS "Employee First Name", emp.last_name AS "Employee Last Name", CONCAT("$",FORMAT(erole.salary, 2)) as "Salary", emp.manager_id, concat(man.first_name," ",man.last_name) AS "Manager" FROM emprole erole JOIN department dept ON dept.id = erole.department_id LEFT JOIN employee emp ON erole.id = emp.role_id LEFT JOIN employee man ON emp.manager_id = man.id;', (err, results) => {
+    connection.query('SELECT dept.name AS "Department Name", erole.title as "Position", CONCAT("$",FORMAT(erole.salary, 2)) as "Salary", concat(man.first_name," ",man.last_name) AS "Employee Manager", emp.first_name AS "Employee First Name", emp.last_name AS "Employee Last Name"FROM emprole erole JOIN department dept ON dept.id = erole.department_id LEFT JOIN employee emp ON erole.id = emp.role_id LEFT JOIN employee man ON emp.manager_id = man.id;', (err, results) => {
         if (err) throw err;
         console.log('\n------------------------------\nEmployee Summary\n------------------------------\n');
         console.table(results);
