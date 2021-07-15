@@ -24,7 +24,7 @@ const start = () => {
                         type: 'list',        
                         name: 'action',
                         message: 'What would you like to do with the Employee Tracker?',
-                        choices: ['VIEW', 'ADD TO', 'UPDATE', 'EXIT Application'],
+                        choices: ['VIEW', 'ADD TO', 'UPDATE', 'REMOVE FROM', 'EXIT Application'],
                     },
                     {
                         type: 'list',
@@ -69,6 +69,13 @@ const start = () => {
                         name: 'lname',
                         message: "What is the employee's last name?",
                         when: (answers) => answers.addwhat === 'Employee',
+                    },
+                    {
+                        type: 'list',
+                        name: 'removeWhat',
+                        message: 'What would you like to remove?',
+                        choices: ['Employee'],
+                        when: (answers) => answers.action ==="REMOVE FROM",
                     }
 
         ])
@@ -90,6 +97,8 @@ const start = () => {
                 addEmployee(answers);
             } else if (answers.action === 'UPDATE') {
                 updateEmployee();
+            } else if (answers.removeWhat === 'Employee') {
+                removeEmployee();
             }
             
             else {
@@ -121,7 +130,7 @@ const viewDepartments = () => {
 
 //Display roles from DB
 const viewRoles = () => {
-    connection.query('SELECT * FROM emprole', (err, results) => {
+    connection.query('SELECT r.id, r.title, r.salary, d.name as department FROM emprole r LEFT JOIN department d ON r.department_id = d.id', (err, results) => {
         if (err) throw err;
         console.log('\n------------------------------\nEmployee Roles\n------------------------------\n')
         console.table(results);
@@ -131,7 +140,7 @@ const viewRoles = () => {
 
 //Display employees from DB
 const viewEmployees = () => {
-    connection.query('SELECT * FROM employee', (err, results) => {
+    connection.query('SELECT id, first_name, last_name FROM employee', (err, results) => {
         if (err) throw err;
         console.log('\n------------------------------\nEmployees\n------------------------------\n')
         console.table(results);
@@ -264,6 +273,30 @@ const updateEmployee = () => {
                 }
             )
         })
+    })
+}
+
+//Function to remove Employees from the employe DB table
+const removeEmployee = () => {
+    connection.query("SELECT id, concat(first_name, ' ', last_name) AS empName FROM employee", async (err, results_emp) => {
+        if (err) throw err;
+        //prompt user for the name of the employee they wish to update
+        const empRemove = await inquirer.prompt([
+            {
+                type:'rawlist',
+                name: 'emp',
+                choices: getEmpArray(results_emp),
+                message: 'Which employee would you like to update?',
+            },
+        ]);
+        //find employee index in order to use role_id in WHERE clause for emprole table
+        empIndex = results_emp.findIndex(result => result.empName === empRemove.emp);
+
+        connection.query(`DELETE FROM employee WHERE id = ${results_emp[empIndex].id}`, (error) => {
+            if (error) throw error;
+            console.log('Employee removed successfully.');
+            start();
+        });
     })
 }
 
