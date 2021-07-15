@@ -23,7 +23,7 @@ const start = () => {
                     {
                         type: 'list',        
                         name: 'action',
-                        message: 'What would you like to do to the employee roster?',
+                        message: 'What would you like to do with the Employee Tracker?',
                         choices: ['VIEW', 'ADD TO', 'UPDATE', 'EXIT Application'],
                     },
                     {
@@ -57,6 +57,18 @@ const start = () => {
                         name: 'salary',
                         message: 'What is the salary for this position?',
                         when:  (answers) => answers.addwhat === 'Role',
+                    },
+                    {
+                        type: 'input',
+                        name: 'fname',
+                        message: "What is the employee's first name?",
+                        when: (answers) => answers.addwhat === 'Employee',
+                    },
+                    {
+                        type: 'input',
+                        name: 'lname',
+                        message: "What is the employee's last name?",
+                        when: (answers) => answers.addwhat === 'Employee',
                     }
 
         ])
@@ -73,8 +85,9 @@ const start = () => {
             } else if (answers.addwhat === 'Department') {
                 addDepartment(answers.deptName);
             } else if (answers.addwhat === 'Role') {
-                console.log(answers);
                 addRole(answers);
+            } else if (answers.addwhat === 'Employee') {
+                addEmployee(answers);
             }
             
             else {
@@ -141,15 +154,16 @@ const addRole = (titlesalary) => {
         if (err) throw err;
         //prompt user for which department to add
         const answer = await inquirer.prompt([
-                        {
-                            type: 'rawlist',
-                            name: 'deptID',
-                            choices: returnDeptArray(results),
-                            message: 'Which department does this role belong to?',
-                        },
-            ]); 
-
+            {
+                type: 'rawlist',
+                name: 'deptID',
+                choices: returnDeptArray(results),
+                message: 'Which department does this role belong to?',
+            },
+        ]); 
+        //find index of selected department in order to find id of department
         deptIndex = results.findIndex(result => result.name === answer.deptID);
+
         connection.query('INSERT INTO emprole SET ?',
             {
                 title: titlesalary.roleTitle,
@@ -159,20 +173,71 @@ const addRole = (titlesalary) => {
                 if (error) throw err;
                 console.log('Role added successfully.')
                 start();
-            })
-})
-    
-        console.log('Test log');
+            }
+        )
+    })
 }
 
-//funciton to return an array of choices from the deparment table
+//Function to add an employee
+const addEmployee = (fname_lname) => {
+    connection.query('SELECT * FROM department', async (err, results_dept) => {
+        if (err) throw err;
+        //prompt user for department employee is being added to
+        const dept = await inquirer.prompt([
+            {
+                type:'rawlist',
+                name: 'dept',
+                choices: returnDeptArray(results_dept),
+                message: 'Which department is the employee being added to?',
+            },
+        ]);
+        
+        deptIndex = results_dept.findIndex(result => result.name === dept.dept);
+        
+        connection.query(`SELECT * FROM emprole WHERE department_id = ${results_dept[deptIndex].id}`, async (err, results_role) => {
+            const roleID = await inquirer.prompt([
+                {
+                    type: 'rawlist',
+                    name: 'roleID',
+                    choices: getRoleArray(results_role),
+                    message: 'What is the new employees role?',
+                },
+            ]);
+            roleIndex = results_role.findIndex(result => result.title === roleID.roleID);
+
+            connection.query('INSERT INTO employee SET ?',
+                {
+                    first_name: fname_lname.fname,
+                    last_name: fname_lname.lname,
+                    role_id: results_role[roleIndex].id,
+                }, (error) => {
+                    if (error) throw err;
+                    console.log('Employee added successfully.')
+                    start();
+                }
+            )
+        })
+
+    })
+}
+
+//function to return an array of choices from the deparment table
 function returnDeptArray(results) {
-    const choiceArray = [];
+    const deptArray = [];
     results.forEach(({ name }) => {
-        choiceArray.push(name);
+        deptArray.push(name);
     });
-    return choiceArray;
+    return deptArray;
 };
+
+//function to return an array of choices from the emprole table
+function getRoleArray(results){
+    const roleArray = [];
+    results.forEach(({ title }) => {
+        roleArray.push(title);
+    });
+    return roleArray;
+}
 
 //connect to the mysql server and sql db
 connection.connect((err) => {
