@@ -72,11 +72,18 @@ const start = () => {
                     },
                     {
                         type: 'list',
+                        name: 'updateWhat',
+                        choices: ['Employee Role', 'Employee Manager'],
+                        message: 'What would you like to update?',
+                        when: (answers) => answers.action === "UPDATE",
+                    },
+                    {
+                        type: 'list',
                         name: 'removeWhat',
                         message: 'What would you like to remove?',
                         choices: ['Employee'],
                         when: (answers) => answers.action ==="REMOVE FROM",
-                    }
+                    },
 
         ])
         .then ((answers) => {
@@ -95,16 +102,16 @@ const start = () => {
                 addRole(answers);
             } else if (answers.addwhat === 'Employee') {
                 addEmployee(answers);
-            } else if (answers.action === 'UPDATE') {
-                updateEmployee();
+            } else if (answers.updateWhat === 'Employee Role') {
+                updateEmployeeRole();
+            } else if (answers.updateWhat === 'Employee Manager') {
+                updateEmployeeManager();
             } else if (answers.removeWhat === 'Employee') {
                 removeEmployee();
-            }
-            
-            else {
+            } else {
                 connection.end();
             }
-        })
+        }) 
 }
 
 //Display employee summary from DB
@@ -238,7 +245,7 @@ const addEmployee = (fname_lname) => {
 }
 
 //Function to update employee role
-const updateEmployee = () => {
+const updateEmployeeRole = () => {
     connection.query("SELECT e.id, concat(e.first_name, ' ', e.last_name) AS empName, e.role_id, e.manager_id, r.title, r.department_id FROM employee e JOIN emprole r ON e.role_id = r.id;", async (err, results_emp) => {
         // console.log(results_emp);
         if (err) throw err;
@@ -285,6 +292,62 @@ const updateEmployee = () => {
         })
     })
 }
+
+//Function to update Employee Manager
+const updateEmployeeManager = () => {
+    connection.query("SELECT e.id, concat(e.first_name, ' ', e.last_name) AS empName, e.role_id, e.manager_id, r.title, r.department_id FROM employee e JOIN emprole r ON e.role_id = r.id;", async (err, results_emp) => {
+        // console.log(results_emp);
+        if (err) throw err;
+        //prompt user for the name of the employee they wish to update
+        const empUpdate = await inquirer.prompt([
+            {
+                type:'rawlist',
+                name: 'emp',
+                choices: getEmpArray(results_emp),
+                message: 'Which employee would you like to update?',
+            },
+        ]);
+        //find employee index in order to use role_id in WHERE clause for emprole table
+        empIndex = results_emp.findIndex(result => result.empName === empUpdate.emp);
+    
+        //provide list of possible managers for selected employee, based on department of employee
+        connection.query("SELECT e.id, concat(e.first_name, ' ', e.last_name) AS empName, e.role_id, e.manager_id, r.title, r.department_id FROM employee e JOIN emprole r ON e.role_id = r.id WHERE e.id <> ? AND r.department_id = ?",
+            [results_emp[empIndex].id, results_emp[empIndex].department_id],
+            async (err, results_man) => {
+            // console.log(results_emp);
+            if (err) throw err;
+
+            //prompt user for the name of the employee they wish to update
+            const manUpdate = await inquirer.prompt([
+                {
+                    type:'rawlist',
+                    name: 'manager',
+                    choices: getEmpArray(results_man),
+                    message: 'Which employee would you like to update?',
+                },
+            ]);
+            //find employee index in order to use role_id in WHERE clause for emprole table
+            manIndex = results_man.findIndex(result => result.empName === manUpdate.manager);
+
+            connection.query("UPDATE employee SET ? WHERE ?",
+                [
+                    {
+                        manager_id: results_man[manIndex].id,
+                    },
+                    {
+                        id:results_emp[empIndex].id
+                    }
+                ], 
+                (error) => {
+                    if (error) throw error;
+                    console.log("Employee's Manager updated successfully.")
+                    start();
+                }
+            )
+        })
+    })    
+}
+
 
 //Function to remove Employees from the employe DB table
 const removeEmployee = () => {
