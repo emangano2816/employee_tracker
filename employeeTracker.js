@@ -2,8 +2,6 @@
 const mysql = require('mysql');
 const inquirer = require('inquirer');
 const cTable = require('console.table');
-const { allowedNodeEnvironmentFlags } = require('process');
-
 
 //create connection info for sql db
 const connection = mysql.createConnection({
@@ -30,7 +28,7 @@ const start = () => {
                         type: 'list',
                         name: 'viewwhat',
                         message: 'What information would you like to view?',
-                        choices: ['Summary', 'Departments', 'Roles', 'Employees'],
+                        choices: ['Summary', 'Departments', 'Roles', 'Employees', 'Employees by Manager'],
                         when: (answers)=> answers.action === 'VIEW',
                     },
                     {
@@ -96,6 +94,8 @@ const start = () => {
                 viewRoles();
             } else if (answers.viewwhat === 'Employees') {
                 viewEmployees();
+            } else if (answers.viewwhat === 'Employees by Manager') {
+                viewEmpByManager();
             } else if (answers.addwhat === 'Department') {
                 addDepartment(answers.deptName);
             } else if (answers.addwhat === 'Role') {
@@ -116,43 +116,62 @@ const start = () => {
 
 //Display employee summary from DB
 const viewRoster = () => {
-    connection.query('SELECT dept.name AS "Department Name", erole.title as "Position", CONCAT("$",FORMAT(erole.salary, 2)) as "Salary", concat(man.first_name," ",man.last_name) AS "Employee Manager", emp.first_name AS "Employee First Name", emp.last_name AS "Employee Last Name"FROM emprole erole JOIN department dept ON dept.id = erole.department_id LEFT JOIN employee emp ON erole.id = emp.role_id LEFT JOIN employee man ON emp.manager_id = man.id;', (err, results) => {
-        if (err) throw err;
-        console.log('\n------------------------------\nEmployee Summary\n------------------------------\n');
-        console.table(results);
-        start();
-    })
+    connection.query("SELECT dept.name AS 'Department Name', erole.title as 'Position', CONCAT('$',FORMAT(erole.salary, 2)) as 'Salary', concat(man.first_name,' ',man.last_name) AS 'Employee Manager', emp.first_name AS 'Employee First Name', emp.last_name AS 'Employee Last Name' FROM emprole erole JOIN department dept ON dept.id = erole.department_id LEFT JOIN employee emp ON erole.id = emp.role_id LEFT JOIN employee man ON emp.manager_id = man.id;",
+        (err, results) => {
+            if (err) throw err;
+            console.log('\n------------------------------\nEmployee Summary\n------------------------------\n');
+            console.table(results);
+            start();
+        }
+    )
 }
 
 //Display departments from DB
 const viewDepartments = () => {
-    connection.query('SELECT * FROM department', (err, results) => {
-        if (err) throw err;
-        console.log('\n------------------------------\nDepartments\n------------------------------\n');
-        console.table(results);
-        start();  
-    })  
- 
+    connection.query("SELECT id, name as 'Department' FROM department",
+        (err, results) => {
+            if (err) throw err;
+            console.log('\n------------------------------\nDepartments\n------------------------------\n');
+            console.table(results);
+            start();  
+        }
+    )   
 }
 
 //Display roles from DB
 const viewRoles = () => {
-    connection.query('SELECT r.id, r.title, r.salary, d.name as department FROM emprole r LEFT JOIN department d ON r.department_id = d.id', (err, results) => {
-        if (err) throw err;
-        console.log('\n------------------------------\nEmployee Roles\n------------------------------\n')
-        console.table(results);
-        start();
-    })
+    connection.query("SELECT r.id, r.title as 'Position', r.salary as 'Salary', d.name as 'Department' FROM emprole r LEFT JOIN department d ON r.department_id = d.id", 
+        (err, results) => {
+            if (err) throw err;
+            console.log('\n------------------------------\nEmployee Roles\n------------------------------\n')
+            console.table(results);
+            start();
+        }
+    )
 }
 
 //Display employees from DB
 const viewEmployees = () => {
-    connection.query('SELECT id, first_name, last_name FROM employee', (err, results) => {
-        if (err) throw err;
-        console.log('\n------------------------------\nEmployees\n------------------------------\n')
-        console.table(results);
-        start();
-    })
+    connection.query("SELECT id, first_name as 'First Name', last_name as 'Last Name' FROM employee", 
+        (err, results) => {
+            if (err) throw err;
+            console.log('\n------------------------------\nEmployees\n------------------------------\n')
+            console.table(results);
+            start();
+        }
+    )
+}
+
+//Display employees by Manager
+const viewEmpByManager = () => {
+    connection.query("SELECT d.name as 'Department', a.first_name as 'Manager First Name', a.last_name as 'Manager Last Name', r.title as 'Employee Position', b.first_name as 'Employee First Name', b.last_name as 'Employee Last Name' FROM employee a JOIN employee b on a.id = b.manager_id JOIN emprole r on r.id = b.role_id JOIN department d on r.department_id = d.id WHERE b.manager_id is not null",
+        (error, results) => {
+            if (error) throw error;
+            console.log('\n------------------------------\nEmployees by Manager\n------------------------------\n');
+            console.table(results);
+            start();
+        }
+    )
 }
 
 //Function to add a department
@@ -163,7 +182,8 @@ const addDepartment =(deptName) => {
             if(err) throw err;
             console.log('\nDepartment has been added.')
             start();
-        })
+        }
+    )
 }
 
 //Function to add a role
