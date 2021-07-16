@@ -44,18 +44,17 @@ CREATE TABLE employee (
     ON UPDATE CASCADE
 );
 
--- Populating tables with test data --
 INSERT INTO department (name) 
-VALUES('Accountability'), ('Testing'), ('Research');
+VALUES('Accountability'), ('Testing');
 
 INSERT INTO emprole (title, salary, department_id) 
-VALUES ('Manager', '100000', 1), ('Data Specialist', '80000', 1);
+VALUES ('Program Manager', '100000', 1),('Data Specialist I', '65000', 1), ('Data Specialist II', '75000', 1), ('Research Specialist I', '75000', 1), ('Research Specialist II', 85000, 1);
 
 INSERT INTO emprole (title, salary, department_id) 
-VALUES ('Manager', '100000', 2), ('Testing Specialist', '85000',2);
-
-INSERT INTO emprole (title, salary, department_id)
-VALUES ('Research Specialist','90000',3);
+VALUES ('Manager', '100000', 2), ('Testing Specialist I', '85000',2), ('Testing Specialist ', '95000',2);
 
 INSERT INTO employee (first_name, last_name, role_id, manager_id)
-VALUES ('Beth', 'Thompson', 1, null), ('Clark', 'Account', 2, 1);
+VALUES ('Beth', 'Smith', 1, null), ('Elsa', 'Arendale', 2, 1), ('Poppy', 'Troll', 3, 1), ('Belle','Beast', 3, null);
+
+INSERT INTO employee (first_name, last_name, role_id, manager_id)
+VALUES ('Karen', 'Book', 6, null), ('Peter', 'Pan', 7, null), ('Sven', 'Reigndeer', '8','5')
