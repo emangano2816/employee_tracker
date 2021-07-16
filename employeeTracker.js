@@ -205,7 +205,11 @@ const addEmployee = (fname_lname) => {
         //find index of selected department in order to find id of department for WHERE clause
         deptIndex = results_dept.findIndex(result => result.name === dept.dept);
         
-        connection.query(`SELECT * FROM emprole WHERE department_id = ${results_dept[deptIndex].id}`, async (err, results_role) => {
+        connection.query("SELECT * FROM emprole WHERE ?",
+            {
+                department_id: results_dept[deptIndex].id
+            }, 
+            async (err, results_role) => {
             const roleID = await inquirer.prompt([
                 {
                     type: 'rawlist',
@@ -250,7 +254,8 @@ const updateEmployee = () => {
         //find employee index in order to use role_id in WHERE clause for emprole table
         empIndex = results_emp.findIndex(result => result.empName === empUpdate.emp);
 
-        connection.query(`SELECT * FROM emprole WHERE id <> ${results_emp[empIndex].role_id} AND department_id = ${results_emp[empIndex].department_id}`, async (err, results_role) => {
+        connection.query("SELECT * FROM emprole WHERE id <> ? AND department_id = ?",
+            [results_emp[empIndex].role_id, results_emp[empIndex].department_id],  async (err, results_role) => {
             console.log(results_role);
             const roleID = await inquirer.prompt([
                 {
@@ -263,10 +268,15 @@ const updateEmployee = () => {
             //find index of selected role in order to supply role id for insert
             roleIndex = results_role.findIndex(result => result.title === roleID.roleID);
 
-            connection.query(`UPDATE employee SET ? WHERE id = ${results_emp[empIndex].id}`,
-                {
-                    role_id: results_role[roleIndex].id,
-                }, (error) => {
+            connection.query("UPDATE employee SET ? WHERE ?",
+                [
+                    {
+                        role_id: results_role[roleIndex].id,
+                    },
+                    {
+                        id:results_emp[empIndex].id
+                    }
+                ], (error) => {
                     if (error) throw err;
                     console.log('Employee role updated successfully.')
                     start();
@@ -292,7 +302,11 @@ const removeEmployee = () => {
         //find employee index in order to use role_id in WHERE clause for emprole table
         empIndex = results_emp.findIndex(result => result.empName === empRemove.emp);
 
-        connection.query(`DELETE FROM employee WHERE id = ${results_emp[empIndex].id}`, (error) => {
+        connection.query("DELETE FROM employee WHERE ?", 
+            {
+                id: results_emp[empIndex].id
+            }, 
+            (error) => {
             if (error) throw error;
             console.log('Employee removed successfully.');
             start();
