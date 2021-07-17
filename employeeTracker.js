@@ -2,14 +2,15 @@
 const mysql = require('mysql');
 const inquirer = require('inquirer');
 const cTable = require('console.table');
+require('dotenv').config();
 
 //create connection info for sql db
 const connection = mysql.createConnection({
     host: 'localhost',
     port: 3306,
-    user:'root',
-    password: 'P3@nut_t0A$T',
-    database: 'employee_trackerDB'
+    user:process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
 });
 
 //function to determine which action user would like to take
