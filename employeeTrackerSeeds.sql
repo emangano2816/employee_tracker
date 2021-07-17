@@ -44,6 +44,7 @@ CREATE TABLE employee (
     ON UPDATE CASCADE
 );
 
+--Insert test data into tables
 INSERT INTO department (name) 
 VALUES('Accountability'), ('Testing');
 
@@ -58,3 +59,30 @@ VALUES ('Beth', 'Smith', 1, null), ('Elsa', 'Arendale', 2, 1), ('Poppy', 'Troll'
 
 INSERT INTO employee (first_name, last_name, role_id, manager_id)
 VALUES ('Karen', 'Book', 6, null), ('Peter', 'Pan', 7, null), ('Sven', 'Reigndeer', '8','5')
+
+
+-- Create view of all tables joined together
+CREATE VIEW emp_role_dep_vw AS
+SELECT r.id as role_id, r.title, r.salary, a.id as emp_id, a.first_name, a.last_name, a.role_id as emp_role_id, a.manager_id, d.id as dept_id, d.name
+FROM emprole r
+LEFT JOIN employee a ON r.id = a.role_id
+LEFT JOIN department d ON d.id = r.department_id;
+
+-- Create view of budget by department
+CREATE VIEW budget_by_dept_vw AS
+SELECT z.utilized_budget, y.unutilized_budget, x.total_budget, z.name
+FROM 
+((SELECT sum(salary) as utilized_budget, name
+FROM emp_role_dep_vw
+WHERE emp_id is not null
+GROUP BY dept_id) as z
+LEFT JOIN (SELECT sum(salary) as unutilized_budget, name
+FROM emp_role_dep_vw
+WHERE emp_id is null
+GROUP BY dept_id) as y
+ON z.name = y.name
+LEFT JOIN (select sum(salary) as total_budget, name
+FROM emp_role_dep_vw
+GROUP BY dept_id) as x
+ON z.name = x.name)
+GROUP BY z.name
