@@ -28,7 +28,7 @@ const start = () => {
                         type: 'list',
                         name: 'viewwhat',
                         message: 'What information would you like to view?',
-                        choices: ['Summary', 'Departments', 'Roles', 'Employees', 'Employees by Manager'],
+                        choices: ['Summary', 'Departments', 'Roles', 'Employees', 'Employees by Manager', 'Budget by Department'],
                         when: (answers)=> answers.action === 'VIEW',
                     },
                     {
@@ -96,6 +96,8 @@ const start = () => {
                 viewEmployees();
             } else if (answers.viewwhat === 'Employees by Manager') {
                 viewEmpByManager();
+            } else if (answers.viewwhat === 'Budget by Department') {
+                viewBudgetByDept();
             } else if (answers.addwhat === 'Department') {
                 addDepartment(answers.deptName);
             } else if (answers.addwhat === 'Role') {
@@ -119,7 +121,7 @@ const viewRoster = () => {
     connection.query("SELECT dept.name AS 'Department Name', erole.title as 'Position', CONCAT('$',FORMAT(erole.salary, 2)) as 'Salary', concat(man.first_name,' ',man.last_name) AS 'Employee Manager', emp.first_name AS 'Employee First Name', emp.last_name AS 'Employee Last Name' FROM emprole erole JOIN department dept ON dept.id = erole.department_id LEFT JOIN employee emp ON erole.id = emp.role_id LEFT JOIN employee man ON emp.manager_id = man.id;",
         (err, results) => {
             if (err) throw err;
-            console.log('\n------------------------------\nEmployee Summary\n------------------------------\n');
+            console.log('\n----------------------------------------------------\nSummary of Open and Filled Positions by Department\n----------------------------------------------------\n');
             console.table(results);
             start();
         }
@@ -171,6 +173,18 @@ const viewEmpByManager = () => {
             console.table(results);
             start();
         }
+    )
+}
+
+//Display budget by departments
+const viewBudgetByDept = () => {
+    connection.query("SELECT name as 'Department', CONCAT('$',FORMAT(total_budget, 2)) as 'Total Budget', CONCAT('$',FORMAT(utilized_budget, 2)) as 'Utilized Budget', CONCAT('$',FORMAT(unutilized_budget, 2)) as 'Un-utilized Budget' FROM budget_by_dept_vw",
+        (error, results) => {
+            if (error) throw error;
+            console.log('\n------------------------------\nBudget by Department\n------------------------------\n');
+            console.table(results);
+            start();
+        }  
     )
 }
 
