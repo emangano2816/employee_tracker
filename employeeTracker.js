@@ -119,7 +119,7 @@ const start = () => {
 
 //Display employee summary from DB
 const viewRoster = () => {
-    connection.query("SELECT dept.name AS 'Department Name', erole.title as 'Position', CONCAT('$',FORMAT(erole.salary, 2)) as 'Salary', concat(man.first_name,' ',man.last_name) AS 'Employee Manager', emp.first_name AS 'Employee First Name', emp.last_name AS 'Employee Last Name' FROM emprole erole JOIN department dept ON dept.id = erole.department_id LEFT JOIN employee emp ON erole.id = emp.role_id LEFT JOIN employee man ON emp.manager_id = man.id;",
+    connection.query("SELECT * FROM summary_display_vw",
         (err, results) => {
             if (err) throw err;
             console.log('\n----------------------------------------------------\nSummary of Open and Filled Positions by Department\n----------------------------------------------------\n');
@@ -143,7 +143,7 @@ const viewDepartments = () => {
 
 //Display roles from DB
 const viewRoles = () => {
-    connection.query("SELECT r.id, r.title as 'Position', r.salary as 'Salary', d.name as 'Department' FROM emprole r LEFT JOIN department d ON r.department_id = d.id", 
+    connection.query("SELECT DISTINCT role_id as id, title as 'Position', salary as 'Salary', name as 'Department' FROM emp_role_dep_vw", 
         (err, results) => {
             if (err) throw err;
             console.log('\n------------------------------\nEmployee Roles\n------------------------------\n')

@@ -64,12 +64,13 @@ VALUES ('Tinker', 'Bell', 6, null), ('Peter', 'Pan', 7, null), ('Sven', 'Reignde
 
 
 -- Create Views --
--- View of all tables joined together --
-CREATE VIEW emp_role_dep_vw AS
-SELECT r.id as role_id, r.title, r.salary, a.id as emp_id, a.first_name, a.last_name, a.role_id as emp_role_id, a.manager_id, d.id as dept_id, d.name
-FROM emprole r
-LEFT JOIN employee a ON r.id = a.role_id
-LEFT JOIN department d ON d.id = r.department_id;
+-- View for Summary Display
+CREATE VIEW summary_display_vw AS
+ SELECT dept.name AS 'Department Name', erole.title as 'Position', CONCAT('$',FORMAT(erole.salary, 2)) as 'Salary', concat(man.first_name,' ',man.last_name) AS 'Employee Manager', emp.first_name AS 'Employee First Name', emp.last_name AS 'Employee Last Name' 
+ FROM emprole erole 
+ RIGHT JOIN department dept ON dept.id = erole.department_id 
+ LEFT JOIN employee emp ON erole.id = emp.role_id 
+ LEFT JOIN employee man ON emp.manager_id = man.id;
 
 -- Employee List with Role and Department View
 CREATE VIEW emp_role_dept_list_vw AS
@@ -83,8 +84,16 @@ SELECT d.name as 'Department', a.first_name as 'Manager First Name', a.last_name
 FROM employee a 
 RIGHT JOIN employee b on a.id = b.manager_id 
 JOIN emprole r on r.id = b.role_id 
-JOIN department d on r.department_id = d.id 
+RIGHT JOIN department d on r.department_id = d.id 
 ORDER BY d.name, a.last_name desc, a.first_name, b.last_name, b.first_name;
+
+-- View of all tables joined together --
+-- Used to generate budget_by_dept_vw --
+CREATE VIEW emp_role_dep_vw AS
+SELECT r.id as role_id, r.title, r.salary, a.id as emp_id, a.first_name, a.last_name, a.role_id as emp_role_id, a.manager_id, d.id as dept_id, d.name
+FROM emprole r
+LEFT JOIN employee a ON r.id = a.role_id
+RIGHT JOIN department d ON d.id = r.department_id;
 
 -- View of budget summary by department --
 CREATE VIEW budget_by_dept_vw AS
