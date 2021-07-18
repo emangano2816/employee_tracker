@@ -71,6 +71,12 @@ FROM emprole r
 LEFT JOIN employee a ON r.id = a.role_id
 LEFT JOIN department d ON d.id = r.department_id;
 
+-- Employee List with Role and Department View
+CREATE VIEW emp_role_dept_list_vw AS
+SELECT e.id, concat(e.first_name, ' ', e.last_name) AS empName, e.role_id, e.manager_id, r.title, r.department_id 
+FROM employee e 
+JOIN emprole r ON e.role_id = r.id;
+
 -- View of Employee by Manager
 CREATE VIEW emp_by_manager_vw AS
 SELECT d.name as 'Department', a.first_name as 'Manager First Name', a.last_name as 'Manager Last Name', r.title as 'Employee Position', b.first_name as 'Employee First Name', b.last_name as 'Employee Last Name' 
@@ -82,7 +88,7 @@ ORDER BY d.name, a.last_name desc, a.first_name, b.last_name, b.first_name;
 
 -- View of budget summary by department --
 CREATE VIEW budget_by_dept_vw AS
-SELECT z.utilized_budget, y.unutilized_budget, x.total_budget, x.name
+SELECT CONCAT('$',FORMAT(z.utilized_budget,2)) as 'Utilized Budget', CONCAT('$', FORMAT(y.unutilized_budget, 2)) as 'Un-utilized Budget', CONCAT('$', FORMAT(x.total_budget,2)) as 'Total Budget', x.name as 'Department'
 FROM 
 ((SELECT sum(salary) as utilized_budget, name
 FROM emp_role_dep_vw

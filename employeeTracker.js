@@ -179,7 +179,7 @@ const viewEmpByManager = () => {
 
 //Display budget by departments
 const viewBudgetByDept = () => {
-    connection.query("SELECT name as 'Department', CONCAT('$',FORMAT(total_budget, 2)) as 'Total Budget', CONCAT('$',FORMAT(utilized_budget, 2)) as 'Utilized Budget', CONCAT('$',FORMAT(unutilized_budget, 2)) as 'Un-utilized Budget' FROM budget_by_dept_vw",
+    connection.query("SELECT * FROM budget_by_dept_vw",
         (error, results) => {
             if (error) throw error;
             console.log('\n------------------------------\nBudget by Department\n------------------------------\n');
@@ -281,7 +281,7 @@ const addEmployee = (fname_lname) => {
 
 //Function to update employee role
 const updateEmployeeRole = () => {
-    connection.query("SELECT e.id, concat(e.first_name, ' ', e.last_name) AS empName, e.role_id, e.manager_id, r.title, r.department_id FROM employee e JOIN emprole r ON e.role_id = r.id;", async (err, results_emp) => {
+    connection.query("SELECT * FROM emp_role_dept_list_vw;", async (err, results_emp) => {
         // console.log(results_emp);
         if (err) throw err;
         //prompt user for the name of the employee they wish to update
@@ -330,7 +330,7 @@ const updateEmployeeRole = () => {
 
 //Function to update Employee Manager
 const updateEmployeeManager = () => {
-    connection.query("SELECT e.id, concat(e.first_name, ' ', e.last_name) AS empName, e.role_id, e.manager_id, r.title, r.department_id FROM employee e JOIN emprole r ON e.role_id = r.id;", async (err, results_emp) => {
+    connection.query("SELECT * FROM emp_role_dept_list_vw;", async (err, results_emp) => {
         // console.log(results_emp);
         if (err) throw err;
         //prompt user for the name of the employee they wish to update
@@ -346,7 +346,7 @@ const updateEmployeeManager = () => {
         empIndex = results_emp.findIndex(result => result.empName === empUpdate.emp);
     
         //provide list of possible managers for selected employee, based on department of employee
-        connection.query("SELECT e.id, concat(e.first_name, ' ', e.last_name) AS empName, e.role_id, e.manager_id, r.title, r.department_id FROM employee e JOIN emprole r ON e.role_id = r.id WHERE e.id <> ? AND r.department_id = ?",
+        connection.query("SELECT * FROM emp_role_dept_list_vw WHERE id <> ? AND department_id = ?",
             [results_emp[empIndex].id, results_emp[empIndex].department_id],
             async (err, results_man) => {
             // console.log(results_emp);
