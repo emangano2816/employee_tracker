@@ -167,7 +167,7 @@ const viewEmployees = () => {
 
 //Display employees by Manager
 const viewEmpByManager = () => {
-    connection.query("SELECT d.name as 'Department', a.first_name as 'Manager First Name', a.last_name as 'Manager Last Name', r.title as 'Employee Position', b.first_name as 'Employee First Name', b.last_name as 'Employee Last Name' FROM employee a JOIN employee b on a.id = b.manager_id JOIN emprole r on r.id = b.role_id JOIN department d on r.department_id = d.id WHERE b.manager_id is not null",
+    connection.query("SELECT * FROM emp_by_manager_vw",
         (error, results) => {
             if (error) throw error;
             console.log('\n------------------------------\nEmployees by Manager\n------------------------------\n');
@@ -210,7 +210,7 @@ const addRole = (titlesalary) => {
             {
                 type: 'rawlist',
                 name: 'deptID',
-                choices: returnDeptArray(results),
+                choices: getDeptArray(results),
                 message: 'Which department does this role belong to?',
             },
         ]); 
@@ -240,7 +240,7 @@ const addEmployee = (fname_lname) => {
             {
                 type:'rawlist',
                 name: 'dept',
-                choices: returnDeptArray(results_dept),
+                choices: getDeptArray(results_dept),
                 message: 'Which department is the employee being added to?',
             },
         ]);
@@ -304,7 +304,7 @@ const updateEmployeeRole = () => {
                     type: 'rawlist',
                     name: 'roleID',
                     choices: getRoleArray(results_role),
-                    message: 'What is the new employees role?',
+                    message: "What is the new employee's role?",
                 },
             ]);
             //find index of selected role in order to supply role id for insert
@@ -413,7 +413,7 @@ const removeEmployee = () => {
 }
 
 //function to return an array of choices from the deparment table
-function returnDeptArray(results) {
+function getDeptArray(results) {
     const deptArray = [];
     results.forEach(({ name }) => {
         deptArray.push(name);

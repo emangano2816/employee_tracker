@@ -19,10 +19,12 @@ CREATE TABLE emprole (
     id INTEGER NOT NULL AUTO_INCREMENT,
     title VARCHAR(30) NOT NULL,
     salary DECIMAL(10,2) NOT NULL,
-    department_id INTEGER NOT NULL,
+    department_id INTEGER NULL,
     PRIMARY KEY (id),
     CONSTRAINT FK_department_id FOREIGN KEY (department_id) 
     REFERENCES department(id)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE
 );
 
 -- Create employee table --
@@ -31,12 +33,12 @@ CREATE TABLE employee (
     id INTEGER NOT NULL AUTO_INCREMENT,
     first_name VARCHAR(30) NOT NULL,
     last_name VARCHAR(30) NOT NULL,
-    role_id INTEGER NOT NULL,
+    role_id INTEGER NULL,
     manager_id INTEGER NULL,
     PRIMARY KEY (id),
     CONSTRAINT FK_role_id FOREIGN KEY (role_id) 
     REFERENCES emprole(id)
-    ON DELETE CASCADE
+    ON DELETE SET NULL
     ON UPDATE CASCADE,
     CONSTRAINT FK_manager_id FOREIGN KEY (manager_id)
     REFERENCES emprole(id)
@@ -69,9 +71,18 @@ FROM emprole r
 LEFT JOIN employee a ON r.id = a.role_id
 LEFT JOIN department d ON d.id = r.department_id;
 
+-- View of Employee by Manager
+CREATE VIEW emp_by_manager_vw AS
+SELECT d.name as 'Department', a.first_name as 'Manager First Name', a.last_name as 'Manager Last Name', r.title as 'Employee Position', b.first_name as 'Employee First Name', b.last_name as 'Employee Last Name' 
+FROM employee a 
+RIGHT JOIN employee b on a.id = b.manager_id 
+JOIN emprole r on r.id = b.role_id 
+JOIN department d on r.department_id = d.id 
+ORDER BY d.name, a.last_name desc, a.first_name, b.last_name, b.first_name;
+
 -- View of budget summary by department --
 CREATE VIEW budget_by_dept_vw AS
-SELECT z.utilized_budget, y.unutilized_budget, x.total_budget, z.name
+SELECT z.utilized_budget, y.unutilized_budget, x.total_budget, x.name
 FROM 
 ((SELECT sum(salary) as utilized_budget, name
 FROM emp_role_dep_vw
@@ -82,10 +93,8 @@ FROM emp_role_dep_vw
 WHERE emp_id is null
 GROUP BY dept_id) as y
 ON z.name = y.name
-LEFT JOIN (select sum(salary) as total_budget, name
+RIGHT JOIN (select sum(salary) as total_budget, name
 FROM emp_role_dep_vw
 GROUP BY dept_id) as x
 ON z.name = x.name)
-GROUP BY z.name
-
-
+GROUP BY x.name;
