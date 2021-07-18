@@ -155,7 +155,7 @@ const viewRoles = () => {
 
 //Display employees from DB
 const viewEmployees = () => {
-    connection.query("SELECT id, first_name as 'First Name', last_name as 'Last Name' FROM employee", 
+    connection.query("SELECT * FROM employee_details_vw", 
         (err, results) => {
             if (err) throw err;
             console.log('\n------------------------------\nEmployees\n------------------------------\n')

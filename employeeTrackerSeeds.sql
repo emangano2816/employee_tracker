@@ -78,6 +78,14 @@ SELECT e.id, concat(e.first_name, ' ', e.last_name) AS empName, e.role_id, e.man
 FROM employee e 
 JOIN emprole r ON e.role_id = r.id;
 
+-- Employee Detail View
+CREATE VIEW employee_details_vw AS
+SELECT e.id, CONCAT(e.first_name, ' ', e.last_name) AS Employee, r.title AS Position, CONCAT('$', FORMAT(r.salary,2)) AS Salary, CONCAT(e2.first_name, ' ', e2.last_name) AS 'Manager'
+FROM employee e
+LEFT JOIN employee e2 on e.manager_id = e2.id
+LEFT JOIN emprole r on e.role_id = r.id
+ORDER BY employee;
+
 -- View of Employee by Manager
 CREATE VIEW emp_by_manager_vw AS
 SELECT d.name as 'Department', a.first_name as 'Manager First Name', a.last_name as 'Manager Last Name', r.title as 'Employee Position', b.first_name as 'Employee First Name', b.last_name as 'Employee Last Name' 
