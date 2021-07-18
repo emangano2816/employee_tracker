@@ -298,7 +298,6 @@ const updateEmployeeRole = () => {
 
         connection.query("SELECT * FROM emprole WHERE id <> ? AND department_id = ?",
             [results_emp[empIndex].role_id, results_emp[empIndex].department_id],  async (err, results_role) => {
-            console.log(results_role);
             const roleID = await inquirer.prompt([
                 {
                     type: 'rawlist',
