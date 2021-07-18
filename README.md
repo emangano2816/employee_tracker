@@ -54,7 +54,7 @@ You will need node.js, the inquirer package, mysql package, and console.table pa
 
 ## Video Demonstration
 
-https://user-images.githubusercontent.com/79860046/123992101-4ec9be00-d999-11eb-9b8a-f394bfdd35e4.mp4
+https://user-images.githubusercontent.com/79860046/126083089-00890127-cfdd-46da-b42f-09a3c9d8bc2d.mp4
 
 ## License
 
