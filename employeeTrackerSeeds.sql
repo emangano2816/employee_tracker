@@ -44,7 +44,7 @@ CREATE TABLE employee (
     ON UPDATE CASCADE
 );
 
---Insert test data into tables
+-- Insert test data into tables --
 INSERT INTO department (name) 
 VALUES('Accountability'), ('Testing');
 
@@ -52,23 +52,24 @@ INSERT INTO emprole (title, salary, department_id)
 VALUES ('Program Manager', '100000', 1),('Data Specialist I', '65000', 1), ('Data Specialist II', '75000', 1), ('Research Specialist I', '75000', 1), ('Research Specialist II', 85000, 1);
 
 INSERT INTO emprole (title, salary, department_id) 
-VALUES ('Manager', '100000', 2), ('Testing Specialist I', '85000',2), ('Testing Specialist ', '95000',2);
+VALUES ('Research Specialist', '100000', 2), ('Testing Specialist I', '85000',2), ('Testing Specialist II', '95000',2);
 
 INSERT INTO employee (first_name, last_name, role_id, manager_id)
-VALUES ('Beth', 'Smith', 1, null), ('Elsa', 'Arendale', 2, 1), ('Poppy', 'Troll', 3, 1), ('Belle','Beast', 3, null);
+VALUES ('Beth', 'Smith', 1, null), ('Elsa', 'Arendale', 2, 1), ('Poppy', 'Troll', 3, 1), ('Belle','Beast', 4, null);
 
 INSERT INTO employee (first_name, last_name, role_id, manager_id)
-VALUES ('Karen', 'Book', 6, null), ('Peter', 'Pan', 7, null), ('Sven', 'Reigndeer', '8','5')
+VALUES ('Tinker', 'Bell', 6, null), ('Peter', 'Pan', 7, null), ('Sven', 'Reigndeer', '7','5'), ('Captian', 'Hook', '7', null);
 
 
--- Create view of all tables joined together
+-- Create Views --
+-- View of all tables joined together --
 CREATE VIEW emp_role_dep_vw AS
 SELECT r.id as role_id, r.title, r.salary, a.id as emp_id, a.first_name, a.last_name, a.role_id as emp_role_id, a.manager_id, d.id as dept_id, d.name
 FROM emprole r
 LEFT JOIN employee a ON r.id = a.role_id
 LEFT JOIN department d ON d.id = r.department_id;
 
--- Create view of budget by department
+-- View of budget summary by department --
 CREATE VIEW budget_by_dept_vw AS
 SELECT z.utilized_budget, y.unutilized_budget, x.total_budget, z.name
 FROM 
@@ -86,3 +87,5 @@ FROM emp_role_dep_vw
 GROUP BY dept_id) as x
 ON z.name = x.name)
 GROUP BY z.name
+
+
