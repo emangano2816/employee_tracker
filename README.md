@@ -26,7 +26,7 @@ Upon selecting 'VIEW' the user is asked what they would like to view.  Options i
    * Roles: provides a list of roles by id and department
    * Employees: provides a list of employees by id
    * Employees by Manager: provides a list of employees by department and employee manager
-   * Budget by Department: provides the Total Budget, Utilized Budget, and Un-utilized Budget by department
+   * Budget by Department: provides the Total Position Budget, Utilized Position Budget, and Un-utilized Position Budget by department
 
 Upon selecting 'ADD TO' the user is asked what they would like to add.  Options include:
    * Department
