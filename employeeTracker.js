@@ -14,6 +14,7 @@ const connection = mysql.createConnection({
 });
 
 //function to determine which action user would like to take
+//based on user response certain follow-up questions are asked
 const start = () => {
     console.log('\n\n');
 
@@ -25,6 +26,7 @@ const start = () => {
                         message: 'What would you like to do with the Employee Tracker?',
                         choices: ['VIEW', 'ADD TO', 'UPDATE', 'REMOVE FROM', 'EXIT Application'],
                     },
+                    //follow-up 'VIEW' questions
                     {
                         type: 'list',
                         name: 'viewwhat',
@@ -32,6 +34,7 @@ const start = () => {
                         choices: ['Summary', 'Departments', 'Roles', 'Employees', 'Employees by Manager', 'Budget by Department'],
                         when: (answers)=> answers.action === 'VIEW',
                     },
+                    //follow-up 'ADD' question
                     {
                         type: 'list',
                         name: 'addwhat',
@@ -39,12 +42,14 @@ const start = () => {
                         choices: ['Department', 'Role', 'Employee'],
                         when: (answers) => answers.action === 'ADD TO',
                     },
+                    //follow-up 'ADD - Deparment' question
                     {
                         type: 'input',
                         name: 'deptName',
                         message: 'What is the new Department?',
                         when: (answers) => answers.addwhat === 'Department',
                     },
+                    //follow-up 'ADD - Role' questions
                     {
                         type: 'input',
                         name: 'roleTitle',
@@ -57,6 +62,7 @@ const start = () => {
                         message: 'What is the salary for this position?',
                         when:  (answers) => answers.addwhat === 'Role',
                     },
+                    //follow-up 'ADD - Employee' questions
                     {
                         type: 'input',
                         name: 'fname',
@@ -69,6 +75,7 @@ const start = () => {
                         message: "What is the employee's last name?",
                         when: (answers) => answers.addwhat === 'Employee',
                     },
+                    //follow-up 'UPDATE' question
                     {
                         type: 'list',
                         name: 'updateWhat',
@@ -76,6 +83,7 @@ const start = () => {
                         message: 'What would you like to update?',
                         when: (answers) => answers.action === "UPDATE",
                     },
+                    //follow-up 'REMOVE' question
                     {
                         type: 'list',
                         name: 'removeWhat',
@@ -86,7 +94,7 @@ const start = () => {
 
         ])
         .then ((answers) => {
-            //based on selection call correct function
+            //based on selection(s) from above call correct follow-up function
             if (answers.viewwhat ==='Summary') {
                 viewRoster();
             } else if (answers.viewwhat === 'Departments') {
@@ -217,6 +225,7 @@ const addRole = (titlesalary) => {
         //find index of selected department in order to find id of department
         deptIndex = results.findIndex(result => result.name === answer.deptID);
 
+        //insert role into DB table
         connection.query('INSERT INTO emprole SET ?',
             {
                 title: titlesalary.roleTitle,
@@ -247,6 +256,7 @@ const addEmployee = (fname_lname) => {
         //find index of selected department in order to find id of department for WHERE clause
         deptIndex = results_dept.findIndex(result => result.name === dept.dept);
         
+        //provide list of available roles in selected department
         connection.query("SELECT * FROM emprole WHERE ?",
             {
                 department_id: results_dept[deptIndex].id
@@ -263,6 +273,7 @@ const addEmployee = (fname_lname) => {
             //find index of selected role in order to supply role id for insert
             roleIndex = results_role.findIndex(result => result.title === roleID.roleID);
 
+            //insert employee into DB table
             connection.query('INSERT INTO employee SET ?',
                 {
                     first_name: fname_lname.fname,
@@ -296,6 +307,7 @@ const updateEmployeeRole = () => {
         //find employee index in order to use role_id in WHERE clause for emprole table
         empIndex = results_emp.findIndex(result => result.empName === empUpdate.emp);
 
+        //provide list of available roles in department - exclude current role
         connection.query("SELECT * FROM emprole WHERE id <> ? AND department_id = ?",
             [results_emp[empIndex].role_id, results_emp[empIndex].department_id],  async (err, results_role) => {
             const roleID = await inquirer.prompt([
@@ -309,6 +321,7 @@ const updateEmployeeRole = () => {
             //find index of selected role in order to supply role id for insert
             roleIndex = results_role.findIndex(result => result.title === roleID.roleID);
 
+            //update employee role in DB table
             connection.query("UPDATE employee SET ? WHERE ?",
                 [
                     {
@@ -363,6 +376,7 @@ const updateEmployeeManager = () => {
             //find employee index in order to use role_id in WHERE clause for emprole table
             manIndex = results_man.findIndex(result => result.empName === manUpdate.manager);
 
+            //update employee manager in DB table by employee ID
             connection.query("UPDATE employee SET ? WHERE ?",
                 [
                     {
@@ -399,6 +413,7 @@ const removeEmployee = () => {
         //find employee index in order to use role_id in WHERE clause for emprole table
         empIndex = results_emp.findIndex(result => result.empName === empRemove.emp);
 
+        //remove employee from employee DB table by ID
         connection.query("DELETE FROM employee WHERE ?", 
             {
                 id: results_emp[empIndex].id
